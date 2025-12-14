@@ -16,12 +16,17 @@ public class Player : MonoBehaviour
     private float y_velocity;
     public string playerName = "rain";
 
+    [Header("Movement details")]
     // 仅对 Inspector 窗口有效
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float jumpForce = 8f;
+    private bool _facingRight = true;
+    private bool canMove = true;
+    private bool canJump = true;
+
 
     /// <summary>
-    /// 检查是否在地面上的小线段的[距离]
+    /// 检查是否在地面上的小线段的[距离] 
     /// </summary>
     [Header("Collision details")] [SerializeField]
     private float groundCheckDistance;
@@ -30,19 +35,18 @@ public class Player : MonoBehaviour
     /// 是否在地面上
     /// </summary>
     private bool _isGrounded = true;
-    
-    /// <summary>
-    /// 是否攻击状态
-    /// </summary>
-    private bool _isAttacking = false;
+
+    // /// <summary>
+    // /// 是否攻击状态
+    // /// </summary>
+    // private bool _isAttacking = false;
 
     /// <summary>
     /// 地面的 Layer 掩码
     /// </summary>
     [SerializeField] private LayerMask groundMask;
-
-
-    private bool _facingRight = true;
+    
+    [SerializeField] private LayerMask whatIsEnemy;
 
 
     /// <summary>
@@ -52,6 +56,7 @@ public class Player : MonoBehaviour
 
     private static readonly int XVelocity = Animator.StringToHash("xVelocity");
     private static readonly int YVelocity = Animator.StringToHash("yVelocity");
+    private static readonly int Attack = Animator.StringToHash("attackTrigger");
 
     private void Awake()
     {
@@ -63,40 +68,49 @@ public class Player : MonoBehaviour
     private void Update()
     {
         HandleCollision();
-
-        Move();
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            Jump();
-        }
-
+        HandleInput();
         HandleAnimations();
     }
+
+    public void EnableMoveAndJump(bool enable) => (canJump, canMove) = (enable, enable);
 
     private void HandleCollision()
     {
         _isGrounded = Physics2D.Raycast(transform.position, Vector2.down, groundCheckDistance, groundMask);
     }
 
+    /// <summary>
+    /// 处理 input
+    /// </summary>
     private void HandleInput()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (canMove)
         {
-            Jump();
+            x_velocity = Input.GetAxisRaw("Horizontal") * moveSpeed;
+            Move(x_velocity);
         }
-        
+        else
+            Move(0);
+
+
+        if (canJump && Input.GetKeyDown(KeyCode.Space))
+        {
+            TryToJump();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Mouse0)) // Input.GetMouseDown(0)
+        {
+            TryToAttack();
+        }
     }
 
     /// <summary>
     /// 试图攻击（有可能失败，如在跳跃时候）
     /// </summary>
-    private void AttemptToAttack()
+    private void TryToAttack()
     {
-        if (Input.GetKeyDown(KeyCode.Mouse0)) // Input.GetMouseDown(0)
-        {
-            
-        }
-        
+        if (_isGrounded)
+            anim.SetTrigger(Attack);
     }
 
     /// <summary>
@@ -114,17 +128,15 @@ public class Player : MonoBehaviour
         Debug.Log("player [ " + playerName + "] enter the game!");
     }
 
-    private void Move()
+    private void Move(float xVelocity)
     {
-        x_velocity = Input.GetAxisRaw("Horizontal") * moveSpeed;
-
-        if ((x_velocity > 0 && !_facingRight) || (x_velocity < 0 && _facingRight))
+        if ((xVelocity > 0 && !_facingRight) || (xVelocity < 0 && _facingRight))
             Filp();
 
-        rb.velocity = new Vector2(x_velocity, rb.velocity.y);
+        rb.velocity = new Vector2(xVelocity, rb.velocity.y);
     }
 
-    private void Jump()
+    private void TryToJump()
     {
         if (_isGrounded)
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
