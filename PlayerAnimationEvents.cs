@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerAnimationEvents : MonoBehaviour
@@ -11,6 +8,8 @@ public class PlayerAnimationEvents : MonoBehaviour
     {
         _player = GetComponentInParent<Player>();
     }
+
+    private void DamageEnemies() => _player.DamageEnemy();
 
     private void EnableMoveAndJump() => _player.EnableMoveAndJump(true);
     private void DisableMoveAndJump() => _player.EnableMoveAndJump(false);

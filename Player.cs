@@ -18,7 +18,9 @@ public class Player : MonoBehaviour
 
     [Header("Movement details")]
     // 仅对 Inspector 窗口有效
-    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField]
+    private float moveSpeed = 5f;
+
     [SerializeField] private float jumpForce = 8f;
     private bool _facingRight = true;
     private bool canMove = true;
@@ -46,8 +48,6 @@ public class Player : MonoBehaviour
     /// </summary>
     [SerializeField] private LayerMask groundMask;
     
-    [SerializeField] private LayerMask whatIsEnemy;
-
 
     /// <summary>
     /// 对应于 Animator 的 Parameters
@@ -57,6 +57,11 @@ public class Player : MonoBehaviour
     private static readonly int XVelocity = Animator.StringToHash("xVelocity");
     private static readonly int YVelocity = Animator.StringToHash("yVelocity");
     private static readonly int Attack = Animator.StringToHash("attackTrigger");
+
+    [Header("Attack details")]
+    [SerializeField] private float _attackRadius;
+    [SerializeField] private Transform _attackPoint;
+    [SerializeField] private LayerMask enemyLayerMask;
 
     private void Awake()
     {
@@ -70,6 +75,16 @@ public class Player : MonoBehaviour
         HandleCollision();
         HandleInput();
         HandleAnimations();
+    }
+
+    public void DamageEnemy()
+    {
+        var enemyColliders = Physics2D.OverlapCircleAll(_attackPoint.position, _attackRadius, enemyLayerMask);
+        foreach (var enemyCollider in enemyColliders)
+        {
+            var enemy = enemyCollider.GetComponent<Enemy>();
+            enemy.TakeDamage();
+        }
     }
 
     public void EnableMoveAndJump(bool enable) => (canJump, canMove) = (enable, enable);
@@ -157,6 +172,10 @@ public class Player : MonoBehaviour
     /// </summary>
     private void OnDrawGizmos()
     {
+        // 地面检测
         Gizmos.DrawLine(transform.position, transform.position + new Vector3(0, -groundCheckDistance));
+        
+        // 攻击范围
+        Gizmos.DrawWireSphere(_attackPoint.position, _attackRadius);
     }
 }
