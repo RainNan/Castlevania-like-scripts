@@ -10,7 +10,7 @@ public class Player_IdleState : EntityState
     {
         Debug.Log("idle state update");
 
-        if (Input.GetMouseButtonDown(0))
+        if (_player.MoveInput.x !=0 )
         {
             _stateMachine.ChangeState(_player.Move);
         }
