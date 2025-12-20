@@ -1,23 +1,31 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
-public class Player_MoveState : EntityState
+public class Player_MoveState : Player_GroundedState
 {
     public Player_MoveState(StateMachine stateMachine, Player player) : base(stateMachine, player)
     {
     }
 
-
-    public override void Update()
+    public override void LogicUpdate()
     {
-        Debug.Log("move state update");
-        if (_player.MoveInput.x == 0)
+        base.LogicUpdate();
+
+        if (Mathf.Abs(_player.MoveInput.x) <= 0.01f)
         {
             _stateMachine.ChangeState(_player.Idle);
             return;
         }
 
-        var pos = _player.transform.position;
-        pos.x += _player.MoveInput.x * _player.MoveSpeed * Time.deltaTime;
-        _player.transform.position = pos;
+        _player.UpdateFacing();
+    }
+
+    public override void PhysicUpdate()
+    {
+        base.PhysicUpdate();
+
+        var v = _player.rb.velocity;
+        v.x = _player.MoveInput.x * _player.MoveSpeed;
+        _player.rb.velocity = v;
     }
 }
