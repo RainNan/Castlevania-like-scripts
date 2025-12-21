@@ -38,6 +38,7 @@ public class Player : MonoBehaviour
     private static readonly int YVelocity = Animator.StringToHash("y_velocity");
     private static readonly int IsJumpOrFall = Animator.StringToHash("IsJumpOrFall");
     private static readonly int IsSlide = Animator.StringToHash("IsSlide");
+    private static readonly int IsGrounded_Hash = Animator.StringToHash("IsGrounded");
 
 
     public StateMachine StateMachine { get; private set; }
@@ -77,14 +78,14 @@ public class Player : MonoBehaviour
     {
         _animator = GetComponentInChildren<Animator>();
         _rb = GetComponent<Rigidbody2D>();
-        
+
         StateMachine = new StateMachine();
         Idle = new Player_IdleState(StateMachine, this);
         Move = new Player_MoveState(StateMachine, this);
         Jump = new Player_JumpState(StateMachine, this);
         Fall = new Player_FallState(StateMachine, this);
         Slide = new Player_SlideState(StateMachine, this);
-        
+
         _playerInputSet = new PlayerInputSet();
     }
 
@@ -117,8 +118,9 @@ public class Player : MonoBehaviour
         // 2. 更新动画参数
         _animator.SetFloat(XVelocity, _rb.velocity.x);
         _animator.SetFloat(YVelocity, _rb.velocity.y);
-        _animator.SetBool(IsJumpOrFall, !IsGrounded);
+        _animator.SetBool(IsJumpOrFall, !IsGrounded && !IsWallTouched);
         _animator.SetBool(IsSlide, IsWallTouched && _rb.velocity.y < 0);
+        _animator.SetBool(IsGrounded_Hash, IsGrounded);
 
         // 3. 逻辑更新
         StateMachine.LogicUpdate();
