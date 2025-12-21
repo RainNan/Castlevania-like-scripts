@@ -17,6 +17,13 @@ public class Player_JumpState : EntityState
     public override void LogicUpdate()
     {
         base.LogicUpdate();
+               
+        // => Dash
+        if (_player.DashPressed)
+        {
+            _stateMachine.ChangeState(_player.Dash);
+            return;
+        }
 
         if (_player.IsWallTouched)
         {

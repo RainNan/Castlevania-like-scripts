@@ -9,19 +9,32 @@ public class Player_GroundedState : EntityState
     public override void Enter()
     {
         base.Enter();
+        _player.SetIdleMove(true);
+    }
+
+    public override void Exit()
+    {
+        base.Exit();
+        _player.SetIdleMove(false);
     }
 
     public override void LogicUpdate()
     {
         base.LogicUpdate();
         
+        if (_player.DashPressed)
+        {
+            _stateMachine.ChangeState(_player.Dash);
+            return;
+        }
+
         // 地面按下跳跃：切到 JumpState
         if (_player.JumpPressed && _player.IsGrounded)
         {
             _stateMachine.ChangeState(_player.Jump);
             return;
         }
-        
+
         // 如果不在地面（例如从平台边缘滑落），自动进 Fall
         if (!_player.IsGrounded)
         {

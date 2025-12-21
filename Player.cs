@@ -17,6 +17,11 @@ public class Player : MonoBehaviour
     [SerializeField] private float fastSlideSpeed = 6f;
     public float FastSlideSpeed => fastSlideSpeed;
 
+    [Header("Dash")] [SerializeField] private float _dashSpeed = 15f;
+    public float DashSpeed => _dashSpeed;
+    [SerializeField] private float _dashDuration = .2f;
+    public float DashDuration => _dashDuration;
+
     [Header("Ground Check")] [SerializeField]
     private Transform groundCheck;
 
@@ -34,11 +39,12 @@ public class Player : MonoBehaviour
     public Rigidbody2D rb => _rb;
 
     // Animator Params
-    private static readonly int XVelocity = Animator.StringToHash("x_velocity");
-    private static readonly int YVelocity = Animator.StringToHash("y_velocity");
-    private static readonly int IsJumpOrFall = Animator.StringToHash("IsJumpOrFall");
-    private static readonly int IsSlide = Animator.StringToHash("IsSlide");
-    private static readonly int IsGrounded_Hash = Animator.StringToHash("IsGrounded");
+    private static readonly int XVelocityHash = Animator.StringToHash("x_velocity");
+    private static readonly int YVelocityHash = Animator.StringToHash("y_velocity");
+    private static readonly int IsJumpOrFallHash = Animator.StringToHash("IsJumpOrFall");
+    private static readonly int IsSlideHash = Animator.StringToHash("IsSlide");
+    private static readonly int IsIdleMoveHash = Animator.StringToHash("IsIdleMove");
+    private static readonly int IsDashHash = Animator.StringToHash("IsDash");
 
 
     public StateMachine StateMachine { get; private set; }
@@ -50,12 +56,15 @@ public class Player : MonoBehaviour
     public Player_JumpState Jump { get; private set; }
     public Player_FallState Fall { get; private set; }
     public Player_SlideState Slide { get; private set; }
+    public Player_DashState Dash { get; private set; }
 
     // 输入缓存
     private Vector2 _moveInput;
     public Vector2 MoveInput => _moveInput;
     private bool _jumpPressed;
     public bool JumpPressed => _jumpPressed;
+    private bool _dashPressed;
+    public bool DashPressed => _dashPressed;
 
     /// <summary>
     /// 地面检测结果
@@ -85,6 +94,7 @@ public class Player : MonoBehaviour
         Jump = new Player_JumpState(StateMachine, this);
         Fall = new Player_FallState(StateMachine, this);
         Slide = new Player_SlideState(StateMachine, this);
+        Dash = new Player_DashState(StateMachine, this);
 
         _playerInputSet = new PlayerInputSet();
     }
@@ -114,13 +124,15 @@ public class Player : MonoBehaviour
     {
         // 1. 输入采集
         _jumpPressed = _playerInputSet.Player.Jump.WasPressedThisFrame();
+        _dashPressed = _playerInputSet.Player.Dash.WasPressedThisFrame();
 
         // 2. 更新动画参数
-        _animator.SetFloat(XVelocity, _rb.velocity.x);
-        _animator.SetFloat(YVelocity, _rb.velocity.y);
-        _animator.SetBool(IsJumpOrFall, !IsGrounded && !IsWallTouched);
-        _animator.SetBool(IsSlide, IsWallTouched && _rb.velocity.y < 0);
-        _animator.SetBool(IsGrounded_Hash, IsGrounded);
+        _animator.SetFloat(XVelocityHash, _rb.velocity.x);
+        _animator.SetFloat(YVelocityHash, _rb.velocity.y);
+
+
+        _animator.SetBool(IsJumpOrFallHash, !IsGrounded && !IsWallTouched);
+        _animator.SetBool(IsSlideHash, IsWallTouched && _rb.velocity.y < 0);
 
         // 3. 逻辑更新
         StateMachine.LogicUpdate();
@@ -189,7 +201,9 @@ public class Player : MonoBehaviour
     // Animator 控制（供状态调用，保持集中）
     // public void SetAnimatorJumpFall(bool value) => _animator.SetBool(IsJumpOrFall, value);
     //
-    // public void SetIsSlide(bool value) => _animator.SetBool(IsSlide, value);
+    public void SetIsDash(bool value) => _animator.SetBool(IsDashHash, value);
+    public void SetIdleMove(bool value) => _animator.SetBool(IsIdleMoveHash, value);
+    public void SetJumpFall(bool value) => _animator.SetBool(IsJumpOrFallHash, value);
 
 #if UNITY_EDITOR
     private void OnDrawGizmos()

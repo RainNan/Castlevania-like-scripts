@@ -1,7 +1,10 @@
+using UnityEngine;
+
 public abstract class EntityState
 {
     protected readonly StateMachine _stateMachine;
     protected readonly Player _player;
+    protected float _stateTimer = 3f;
 
     protected EntityState(StateMachine stateMachine, Player player)
     {

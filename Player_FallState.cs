@@ -11,6 +11,7 @@ namespace DefaultNamespace
         public override void Enter()
         {
             base.Enter();
+            _player.SetIdleMove(false);
         }
 
         public override void Exit()
@@ -21,8 +22,15 @@ namespace DefaultNamespace
         public override void LogicUpdate()
         {
             base.LogicUpdate();
+            
+            // => Dash
+            if (_player.DashPressed)
+            {
+                _stateMachine.ChangeState(_player.Dash);
+                return;
+            }
 
-            // 落地 -> Idle/Move
+            // => Idle/Move
             if (_player.IsGrounded)
             {
                 if (Mathf.Abs(_player.MoveInput.x) > 0.01f)

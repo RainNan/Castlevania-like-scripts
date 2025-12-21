@@ -11,6 +11,8 @@ public class Player_SlideState : EntityState
     public override void Enter()
     {
         base.Enter();
+            _player.SetIdleMove(false);
+        
     }
 
     public override void Exit()
