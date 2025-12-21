@@ -45,6 +45,7 @@ public class Player : MonoBehaviour
     private static readonly int IsSlideHash = Animator.StringToHash("IsSlide");
     private static readonly int IsIdleMoveHash = Animator.StringToHash("IsIdleMove");
     private static readonly int IsDashHash = Animator.StringToHash("IsDash");
+    private static readonly int TriggerBasicAttackHash = Animator.StringToHash("TriggerBasicAttack");
 
 
     public StateMachine StateMachine { get; private set; }
@@ -57,6 +58,7 @@ public class Player : MonoBehaviour
     public Player_FallState Fall { get; private set; }
     public Player_SlideState Slide { get; private set; }
     public Player_DashState Dash { get; private set; }
+    public Player_BasicAttack BasicAttack { get; private set; }
 
     // 输入缓存
     private Vector2 _moveInput;
@@ -65,7 +67,9 @@ public class Player : MonoBehaviour
     public bool JumpPressed => _jumpPressed;
     private bool _dashPressed;
     public bool DashPressed => _dashPressed;
-
+    private bool _basicAttackPressed;
+    public bool BasicAttackPressed => _basicAttackPressed;
+    
     /// <summary>
     /// 地面检测结果
     /// </summary>
@@ -83,6 +87,12 @@ public class Player : MonoBehaviour
 
     public PlayerInputSet PlayerInputSet => _playerInputSet;
 
+    /// <summary>
+    /// 基本攻击是否结束
+    /// </summary>
+    private bool _isBasicAttackEnd = true;
+    public bool IsBasicAttackEnd => _isBasicAttackEnd;
+    
     private void Awake()
     {
         _animator = GetComponentInChildren<Animator>();
@@ -95,6 +105,7 @@ public class Player : MonoBehaviour
         Fall = new Player_FallState(StateMachine, this);
         Slide = new Player_SlideState(StateMachine, this);
         Dash = new Player_DashState(StateMachine, this);
+        BasicAttack = new Player_BasicAttack(StateMachine, this);
 
         _playerInputSet = new PlayerInputSet();
     }
@@ -125,11 +136,17 @@ public class Player : MonoBehaviour
         // 1. 输入采集
         _jumpPressed = _playerInputSet.Player.Jump.WasPressedThisFrame();
         _dashPressed = _playerInputSet.Player.Dash.WasPressedThisFrame();
+        _basicAttackPressed = _playerInputSet.Player.BasicAttack.WasPressedThisFrame();
+
+
+        if (_basicAttackPressed)
+        {
+            StateMachine.ChangeState(BasicAttack);
+        }
 
         // 2. 更新动画参数
         _animator.SetFloat(XVelocityHash, _rb.velocity.x);
         _animator.SetFloat(YVelocityHash, _rb.velocity.y);
-
 
         _animator.SetBool(IsJumpOrFallHash, !IsGrounded && !IsWallTouched);
         _animator.SetBool(IsSlideHash, IsWallTouched && _rb.velocity.y < 0);
@@ -204,9 +221,10 @@ public class Player : MonoBehaviour
     public void SetIsDash(bool value) => _animator.SetBool(IsDashHash, value);
     public void SetIdleMove(bool value) => _animator.SetBool(IsIdleMoveHash, value);
     public void SetJumpFall(bool value) => _animator.SetBool(IsJumpOrFallHash, value);
+    public void SetBasicAttack() => _animator.SetTrigger(TriggerBasicAttackHash);
 
 #if UNITY_EDITOR
-    private void OnDrawGizmos()
+    private void OnDrawGizmosSelected()
     {
         Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
 
@@ -215,4 +233,13 @@ public class Player : MonoBehaviour
             wallCheck.position + transform.right * faceRight * wallCheckLength);
     }
 #endif
+    
+    public void OnBasicAttackStart()
+    {
+        _isBasicAttackEnd = false;
+    }
+    public void OnBasicAttackEnd()
+    {
+        _isBasicAttackEnd = true;
+    }
 }

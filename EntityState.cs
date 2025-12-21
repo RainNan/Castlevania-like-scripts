@@ -5,6 +5,7 @@ public abstract class EntityState
     protected readonly StateMachine _stateMachine;
     protected readonly Player _player;
     protected float _stateTimer = 3f;
+    protected bool _isBasicAttackEnd = false;
 
     protected EntityState(StateMachine stateMachine, Player player)
     {
