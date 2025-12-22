@@ -2,37 +2,58 @@ using System;
 using DefaultNamespace;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 
 public class Player : MonoBehaviour
 {
-    [Header("Move")] [SerializeField] private float moveSpeed = 5f;
+    [Header("Move")]
+    [SerializeField]
+    private float moveSpeed = 5f;
     public float MoveSpeed => moveSpeed;
 
-    [Header("Jump")] [SerializeField] private float jumpForce = 8f;
+    [Header("Jump")]
+    [SerializeField]
+    private float jumpForce = 8f;
     public float JumpForce => jumpForce;
 
-    [Header("Slide")] [SerializeField] private float wallSlideSpeed = 3f;
+    [Header("Slide")]
+    [SerializeField]
+    private float wallSlideSpeed = 3f;
     public float WallSlideSpeed => wallSlideSpeed;
-    [SerializeField] private float fastSlideSpeed = 6f;
+    [SerializeField]
+    private float fastSlideSpeed = 6f;
     public float FastSlideSpeed => fastSlideSpeed;
 
-    [Header("Dash")] [SerializeField] private float _dashSpeed = 15f;
+    [Header("Dash")]
+    [SerializeField]
+    private float _dashSpeed = 15f;
     public float DashSpeed => _dashSpeed;
-    [SerializeField] private float _dashDuration = .2f;
+    [SerializeField]
+    private float _dashDuration = .2f;
     public float DashDuration => _dashDuration;
 
-    [Header("Ground Check")] [SerializeField]
+    [Header("Ground Check")]
+    [SerializeField]
     private Transform groundCheck;
+    [SerializeField]
+    private float groundCheckRadius = 0.15f;
+    [SerializeField]
+    private LayerMask groundLayer;
 
-    [SerializeField] private float groundCheckRadius = 0.15f;
-    [SerializeField] private LayerMask groundLayer;
-
-    [Header("Wall Check")] [SerializeField]
+    [Header("Wall Check")]
+    [SerializeField]
     private Transform wallCheck;
-
-    [SerializeField] private LayerMask wallLayer;
-    [SerializeField] private float wallCheckLength = 0.2f;
+    [SerializeField]
+    private LayerMask wallLayer;
+    [SerializeField]
+    private float wallCheckLength = 0.2f;
+    
+    [Header("Basic Attack Combo")]
+    [SerializeField]
+    private float basicAttackComboDuration = 0.3f;
+    public float BasicAttackComboDuration => basicAttackComboDuration;
+    [SerializeField]
+    private Vector2[] basicAttackVelocity;
+    public Vector2[] BasicAttackVelocity => basicAttackVelocity;
 
     private Animator _animator;
     private Rigidbody2D _rb;
@@ -46,6 +67,7 @@ public class Player : MonoBehaviour
     private static readonly int IsIdleMoveHash = Animator.StringToHash("IsIdleMove");
     private static readonly int IsDashHash = Animator.StringToHash("IsDash");
     private static readonly int TriggerBasicAttackHash = Animator.StringToHash("TriggerBasicAttack");
+    private static readonly int BasicAttackIndexHash = Animator.StringToHash("BasicAttackIndex");
 
 
     public StateMachine StateMachine { get; private set; }
@@ -69,7 +91,7 @@ public class Player : MonoBehaviour
     public bool DashPressed => _dashPressed;
     private bool _basicAttackPressed;
     public bool BasicAttackPressed => _basicAttackPressed;
-    
+
     /// <summary>
     /// 地面检测结果
     /// </summary>
@@ -91,8 +113,9 @@ public class Player : MonoBehaviour
     /// 基本攻击是否结束
     /// </summary>
     private bool _isBasicAttackEnd = true;
+
     public bool IsBasicAttackEnd => _isBasicAttackEnd;
-    
+
     private void Awake()
     {
         _animator = GetComponentInChildren<Animator>();
@@ -222,6 +245,7 @@ public class Player : MonoBehaviour
     public void SetIdleMove(bool value) => _animator.SetBool(IsIdleMoveHash, value);
     public void SetJumpFall(bool value) => _animator.SetBool(IsJumpOrFallHash, value);
     public void SetBasicAttack() => _animator.SetTrigger(TriggerBasicAttackHash);
+    public void SetBasicAttackIndex(int index) => _animator.SetInteger(BasicAttackIndexHash, index);
 
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()
@@ -233,13 +257,17 @@ public class Player : MonoBehaviour
             wallCheck.position + transform.right * faceRight * wallCheckLength);
     }
 #endif
-    
+
     public void OnBasicAttackStart()
     {
         _isBasicAttackEnd = false;
     }
+
     public void OnBasicAttackEnd()
     {
         _isBasicAttackEnd = true;
     }
+    
+    public bool IsFaceRight => transform.localScale.x > 0;
+    public int GetFaceRightInt => IsFaceRight ? 1 : -1;
 }

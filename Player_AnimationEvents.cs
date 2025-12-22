@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-public class Player_AnimationEvents:MonoBehaviour
+public class Player_AnimationEvents : MonoBehaviour
 {
     private Player player;
 
