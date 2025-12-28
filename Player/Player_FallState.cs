@@ -2,7 +2,7 @@
 
 namespace DefaultNamespace
 {
-    public class Player_FallState : EntityState
+    public class Player_FallState : PlayerState
     {
         public Player_FallState(StateMachine stateMachine, Player player) : base(stateMachine, player)
         {
@@ -11,7 +11,7 @@ namespace DefaultNamespace
         public override void Enter()
         {
             base.Enter();
-            _player.SetIdleMove(false);
+            player.SetIdleMove(false);
         }
 
         public override void Exit()
@@ -24,27 +24,27 @@ namespace DefaultNamespace
             base.LogicUpdate();
             
             // => Dash
-            if (_player.DashPressed)
+            if (player.DashPressed)
             {
-                _stateMachine.ChangeState(_player.Dash);
+                stateMachine.ChangeState(player.Dash);
                 return;
             }
 
             // => Idle/Move
-            if (_player.IsGrounded)
+            if (player.IsGrounded)
             {
-                if (Mathf.Abs(_player.MoveInput.x) > 0.01f)
-                    _stateMachine.ChangeState(_player.Move);
+                if (Mathf.Abs(player.MoveInput.x) > 0.01f)
+                    stateMachine.ChangeState(player.Move);
                 else
-                    _stateMachine.ChangeState(_player.Idle);
+                    stateMachine.ChangeState(player.Idle);
 
                 // 及其重要！！！
                 return;
             }
 
-            if (_player.IsWallTouched && _player.rb.velocity.y < 0)
+            if (player.IsWallTouched && player.rb.velocity.y < 0)
             {
-                _stateMachine.ChangeState(_player.Slide);
+                stateMachine.ChangeState(player.Slide);
                 return;
             }
         }
@@ -52,11 +52,11 @@ namespace DefaultNamespace
         public override void PhysicUpdate()
         {
             // 空中水平控制
-            var v = _player.rb.velocity;
-            v.x = _player.MoveInput.x * _player.MoveSpeed;
-            _player.rb.velocity = v;
+            var v = player.rb.velocity;
+            v.x = player.MoveInput.x * player.MoveSpeed;
+            player.rb.velocity = v;
 
-            _player.UpdateFacing();
+            player.UpdateFacing();
         }
     }
 }

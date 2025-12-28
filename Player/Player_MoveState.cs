@@ -11,21 +11,21 @@ public class Player_MoveState : Player_GroundedState
     {
         base.LogicUpdate();
 
-        if (Mathf.Abs(_player.MoveInput.x) <= 0.01f)
+        if (Mathf.Abs(player.MoveInput.x) <= 0.01f)
         {
-            _stateMachine.ChangeState(_player.Idle);
+            stateMachine.ChangeState(player.Idle);
             return;
         }
 
-        _player.UpdateFacing();
+        player.UpdateFacing();
     }
 
     public override void PhysicUpdate()
     {
         base.PhysicUpdate();
 
-        var v = _player.rb.velocity;
-        v.x = _player.MoveInput.x * _player.MoveSpeed;
-        _player.rb.velocity = v;
+        var v = player.rb.velocity;
+        v.x = player.MoveInput.x * player.MoveSpeed;
+        player.rb.velocity = v;
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-public class Player_SlideState : EntityState
+public class Player_SlideState : PlayerState
 {
     
     public Player_SlideState(StateMachine stateMachine, Player player) : base(stateMachine, player)
@@ -11,7 +11,7 @@ public class Player_SlideState : EntityState
     public override void Enter()
     {
         base.Enter();
-            _player.SetIdleMove(false);
+            player.SetIdleMove(false);
         
     }
 
@@ -24,25 +24,25 @@ public class Player_SlideState : EntityState
     {
         base.LogicUpdate();
 
-        if (_player.IsGrounded)
+        if (player.IsGrounded)
         {
-            if (Math.Abs(_player.MoveInput.x) > 0.01f)
-                _stateMachine.ChangeState(_player.Move);
+            if (Math.Abs(player.MoveInput.x) > 0.01f)
+                stateMachine.ChangeState(player.Move);
             else
-                _stateMachine.ChangeState(_player.Idle);
+                stateMachine.ChangeState(player.Idle);
             return;
         }
 
         // 不再贴墙 -> 回空中下落
-        if (!_player.IsWallTouched)
+        if (!player.IsWallTouched)
         {
-            _stateMachine.ChangeState(_player.Fall);
+            stateMachine.ChangeState(player.Fall);
             return;
         }
 
-        if (_player.JumpPressed)
+        if (player.JumpPressed)
         {
-            _stateMachine.ChangeState(_player.Jump);
+            stateMachine.ChangeState(player.Jump);
             return;
         }
     }
@@ -51,17 +51,17 @@ public class Player_SlideState : EntityState
     {
         base.PhysicUpdate();
         
-        var v = _player.rb.velocity;
+        var v = player.rb.velocity;
         // 1. 贴墙也可以水平移动
-        v.x = _player.MoveInput.x * _player.MoveSpeed;
+        v.x = player.MoveInput.x * player.MoveSpeed;
         
         // 2. 下落速度是固定的, 按住s可以下落更快
         
         // limit = -10, v.y = -5
-        float limit = (_player.MoveInput.y < 0f) ? _player.FastSlideSpeed : _player.WallSlideSpeed;
+        float limit = (player.MoveInput.y < 0f) ? player.FastSlideSpeed : player.WallSlideSpeed;
         v.y = Mathf.Max(v.y, -limit);
         
         // 一起更新
-        _player.rb.velocity = v;
+        player.rb.velocity = v;
     }
 }

@@ -1,5 +1,5 @@
 ﻿
-public class Player_JumpState : EntityState
+public class Player_JumpState : PlayerState
 {
     public Player_JumpState(StateMachine stateMachine, Player player) : base(stateMachine, player)
     {
@@ -9,9 +9,9 @@ public class Player_JumpState : EntityState
     {
         base.Enter();
 
-        var v = _player.rb.velocity;
-        v.y = _player.JumpForce;
-        _player.rb.velocity = v;
+        var v = player.rb.velocity;
+        v.y = player.JumpForce;
+        player.rb.velocity = v;
     }
 
     public override void LogicUpdate()
@@ -19,22 +19,22 @@ public class Player_JumpState : EntityState
         base.LogicUpdate();
                
         // => Dash
-        if (_player.DashPressed)
+        if (player.DashPressed)
         {
-            _stateMachine.ChangeState(_player.Dash);
+            stateMachine.ChangeState(player.Dash);
             return;
         }
 
-        if (_player.IsWallTouched)
+        if (player.IsWallTouched)
         {
-            _stateMachine.ChangeState(_player.Slide);
+            stateMachine.ChangeState(player.Slide);
             return;
         }
         
         // 上升结束 -> Fall
-        if (_player.rb.velocity.y <= 0f)
+        if (player.rb.velocity.y <= 0f)
         {
-            _stateMachine.ChangeState(_player.Fall);
+            stateMachine.ChangeState(player.Fall);
             return;
         }
     }
@@ -44,10 +44,10 @@ public class Player_JumpState : EntityState
         base.PhysicUpdate();
         
         // 空中也允许水平控制
-        var v = _player.rb.velocity;
-        v.x = _player.MoveInput.x * _player.MoveSpeed;
-        _player.rb.velocity = v;
+        var v = player.rb.velocity;
+        v.x = player.MoveInput.x * player.MoveSpeed;
+        player.rb.velocity = v;
 
-        _player.UpdateFacing();
+        player.UpdateFacing();
     }
 }

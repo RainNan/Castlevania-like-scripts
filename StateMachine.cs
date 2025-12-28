@@ -7,9 +7,9 @@ public class StateMachine
     /// </summary>
     private bool _isTransitioning;
 
-    public void Initialize(EntityState startState)
+    public void Initialize(EntityState entityState)
     {
-        CurrentState = startState;
+        CurrentState = entityState;
         _isTransitioning = true;
         CurrentState.Enter();
         _isTransitioning = false;

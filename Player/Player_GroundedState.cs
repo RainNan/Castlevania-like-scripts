@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class Player_GroundedState : EntityState
+public class Player_GroundedState : PlayerState
 {
     public Player_GroundedState(StateMachine stateMachine, Player player) : base(stateMachine, player)
     {
@@ -9,36 +9,36 @@ public class Player_GroundedState : EntityState
     public override void Enter()
     {
         base.Enter();
-        _player.SetIdleMove(true);
+        player.SetIdleMove(true);
     }
 
     public override void Exit()
     {
         base.Exit();
-        _player.SetIdleMove(false);
+        player.SetIdleMove(false);
     }
 
     public override void LogicUpdate()
     {
         base.LogicUpdate();
         
-        if (_player.DashPressed)
+        if (player.DashPressed)
         {
-            _stateMachine.ChangeState(_player.Dash);
+            stateMachine.ChangeState(player.Dash);
             return;
         }
 
         // 地面按下跳跃：切到 JumpState
-        if (_player.JumpPressed && _player.IsGrounded)
+        if (player.JumpPressed && player.IsGrounded)
         {
-            _stateMachine.ChangeState(_player.Jump);
+            stateMachine.ChangeState(player.Jump);
             return;
         }
 
         // 如果不在地面（例如从平台边缘滑落），自动进 Fall
-        if (!_player.IsGrounded)
+        if (!player.IsGrounded)
         {
-            _stateMachine.ChangeState(_player.Fall);
+            stateMachine.ChangeState(player.Fall);
             return;
         }
     }

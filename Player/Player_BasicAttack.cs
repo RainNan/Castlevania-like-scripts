@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class Player_BasicAttack : EntityState
+public class Player_BasicAttack : PlayerState
 {
     private const int FirstBasicAttackIndex = 1;
     private const int BasicAttackIndexMax = 3;
@@ -18,9 +18,9 @@ public class Player_BasicAttack : EntityState
 
         ResetBasicAttackIndex();
 
-        _player.SetBasicAttackIndex(_curBasicAttackIndex);
-        _player.SetBasicAttack();
-        _player.OnBasicAttackStart();
+        player.SetBasicAttackIndex(_curBasicAttackIndex);
+        player.SetBasicAttack();
+        player.OnBasicAttackStart();
     }
 
     public override void Exit()
@@ -35,9 +35,9 @@ public class Player_BasicAttack : EntityState
     {
         base.LogicUpdate();
 
-        if (_player.IsBasicAttackEnd)
+        if (player.IsBasicAttackEnd)
         {
-            _stateMachine.ChangeState(_player.Idle);
+            stateMachine.ChangeState(player.Idle);
             return;
         }
     }
@@ -46,9 +46,9 @@ public class Player_BasicAttack : EntityState
     {
         base.PhysicUpdate();
 
-        var v = _player.rb.velocity;
-        v.x = _player.BasicAttackVelocity[_curBasicAttackIndex - 1].x * _player.GetFaceRightInt;
-        _player.rb.velocity = v;
+        var v = player.rb.velocity;
+        v.x = player.BasicAttackVelocity[_curBasicAttackIndex - 1].x * player.GetFaceRightInt;
+        player.rb.velocity = v;
     }
 
     /// <summary>
@@ -57,7 +57,7 @@ public class Player_BasicAttack : EntityState
     /// </summary>
     private void ResetBasicAttackIndex()
     {
-        if (Time.time > _lastBasicAttackTime + _player.BasicAttackComboDuration)
+        if (Time.time > _lastBasicAttackTime + player.BasicAttackComboDuration)
         {
             _curBasicAttackIndex = FirstBasicAttackIndex;
             return;

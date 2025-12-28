@@ -1,21 +1,26 @@
+﻿using System;
 using UnityEngine;
 
-public abstract class EntityState
+public class EntityState
 {
-    protected readonly StateMachine _stateMachine;
-    protected readonly Player _player;
-    protected float _stateTimer = 3f;
-    protected bool _isBasicAttackEnd = false;
+    protected readonly StateMachine stateMachine;
+    protected readonly Entity entity;
 
-    protected EntityState(StateMachine stateMachine, Player player)
+    protected readonly Rigidbody2D rb;
+
+        
+    protected float stateTimer = 3f;
+    
+    public EntityState(StateMachine stateMachine,Entity entity)
     {
-        _stateMachine = stateMachine;
-        _player = player;
+        this.stateMachine = stateMachine;
+        this.entity = entity;
+ 
+        rb = entity.rb;
     }
-
+    
     public virtual void Enter()
     {
-        _player.currentStateName = GetType().Name;
     }
 
     public virtual void Exit()
