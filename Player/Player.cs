@@ -151,7 +151,8 @@ public class Player : Entity
         IsBasicAttackEnd = false;
     }
 
-    public void OnBasicAttackEnd()
+    
+    public override void OnBasicAttackEnd()
     {
         IsBasicAttackEnd = true;
     }

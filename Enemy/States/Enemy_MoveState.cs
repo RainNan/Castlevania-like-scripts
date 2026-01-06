@@ -2,9 +2,12 @@
 
 public class Enemy_MoveState : EnemyState
 {
+    private float _elapsed = 0f;
+
     public Enemy_MoveState(StateMachine stateMachine, Enemy enemy) : base(stateMachine, enemy)
     {
     }
+
 
     public override void LogicUpdate()
     {
@@ -14,12 +17,19 @@ public class Enemy_MoveState : EnemyState
         {
             enemy.Flip();
         }
+                
+        _elapsed += Time.deltaTime;
+        if (_elapsed >= stateTimer)
+        {
+            stateMachine.ChangeState(enemy.attack);
+            _elapsed = 0;
+        }
     }
 
     public override void PhysicUpdate()
     {
         base.PhysicUpdate();
-        
-        rb.velocity = new Vector2(enemy.IsFaceRight? enemy.MoveSpeed : -enemy.MoveSpeed, rb.velocity.y);
+
+        rb.velocity = new Vector2(enemy.IsFaceRight ? enemy.MoveSpeed : -enemy.MoveSpeed, rb.velocity.y);
     }
 }

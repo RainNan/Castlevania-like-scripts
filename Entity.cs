@@ -105,4 +105,7 @@ public class Entity : MonoBehaviour
         }
     }
 #endif
+    public virtual void OnBasicAttackEnd()
+    {
+    }
 }
