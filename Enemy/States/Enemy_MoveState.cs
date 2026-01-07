@@ -1,13 +1,12 @@
 ﻿using UnityEngine;
 
-public class Enemy_MoveState : EnemyState
+public class Enemy_MoveState : Enemy_GroundedState
 {
     private float _elapsed = 0f;
 
     public Enemy_MoveState(StateMachine stateMachine, Enemy enemy) : base(stateMachine, enemy)
     {
     }
-
 
     public override void LogicUpdate()
     {

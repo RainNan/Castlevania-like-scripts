@@ -1,4 +1,4 @@
-﻿public class Enemy_IdleState : EnemyState
+﻿public class Enemy_IdleState : Enemy_GroundedState
 {
     public Enemy_IdleState(StateMachine stateMachine, Enemy enemy) : base(stateMachine, enemy)
     {
