@@ -2,8 +2,6 @@
 
 public class Enemy_MoveState : Enemy_GroundedState
 {
-    private float _elapsed = 0f;
-
     public Enemy_MoveState(StateMachine stateMachine, Enemy enemy) : base(stateMachine, enemy)
     {
     }
@@ -11,18 +9,6 @@ public class Enemy_MoveState : Enemy_GroundedState
     public override void LogicUpdate()
     {
         base.LogicUpdate();
-
-        if (!enemy.IsGrounded)
-        {
-            enemy.Flip();
-        }
-                
-        _elapsed += Time.deltaTime;
-        if (_elapsed >= stateTimer)
-        {
-            stateMachine.ChangeState(enemy.attack);
-            _elapsed = 0;
-        }
     }
 
     public override void PhysicUpdate()

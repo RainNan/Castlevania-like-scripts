@@ -89,7 +89,7 @@ public class Entity : MonoBehaviour
 
 
     public bool IsFaceRight => transform.localScale.x > 0;
-    public int GetFaceRightInt => IsFaceRight ? 1 : -1;
+    public float GetFaceRightInt => Mathf.Sign(transform.localScale.x);
 
 
 #if UNITY_EDITOR
