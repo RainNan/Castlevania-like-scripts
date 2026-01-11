@@ -8,6 +8,6 @@
     {
         base.LogicUpdate();
 
-        stateMachine.ChangeState(enemy.move);
+        stateMachine.ChangeState(enemy.Move);
     } 
 }

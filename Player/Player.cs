@@ -3,7 +3,7 @@ using DefaultNamespace;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class Player : Entity
+public class Player : Entity, IDamageable
 {
     [Header("Slide")]
     [SerializeField]
@@ -27,6 +27,14 @@ public class Player : Entity
     private Vector2[] basicAttackVelocity;
     public Vector2[] BasicAttackVelocity => basicAttackVelocity;
 
+    [Header("Attack Dectation")]
+    [SerializeField]
+    private Transform attackDetector;
+    [SerializeField]
+    private float attackRange;
+    [SerializeField]
+    private LayerMask enemyLayerMask;
+
 
     // Animator Params
     private static readonly int XVelocityHash = Animator.StringToHash("x_velocity");
@@ -37,6 +45,7 @@ public class Player : Entity
     private static readonly int IsDashHash = Animator.StringToHash("IsDash");
     private static readonly int TriggerBasicAttackHash = Animator.StringToHash("TriggerBasicAttack");
     private static readonly int BasicAttackIndexHash = Animator.StringToHash("BasicAttackIndex");
+    private static readonly int TriggerTakeDamageHash = Animator.StringToHash("TriggerTakeDamage");
 
     // State
     public Player_IdleState Idle { get; private set; }
@@ -52,11 +61,6 @@ public class Player : Entity
     public bool JumpPressed { get; private set; }
     public bool DashPressed { get; private set; }
     public bool BasicAttackPressed { get; private set; }
-
-    /// <summary>
-    /// 墙壁检测
-    /// </summary>
-    public bool IsWallTouched { get; private set; }
 
 
     /// <summary>
@@ -110,18 +114,25 @@ public class Player : Entity
     protected override void Detect()
     {
         base.Detect();
+    }
 
-        // 墙壁射线检测 -> WallSlide
-        int faceRight = transform.localScale.x > 0 ? 1 : -1;
-        var hit = Physics2D.Raycast(wallCheck.position,
-            transform.right * faceRight,
-            wallCheckLength,
-            wallLayer);
+    /// <summary>
+    /// 攻击
+    /// </summary>
+    public override void OnAttack()
+    {
+        var hits = Physics2D.OverlapCircleAll(
+            attackDetector.position,
+            attackRange,
+            enemyLayerMask
+        );
 
-        if (hit.collider && rb.velocity.y < 0)
-            IsWallTouched = true;
-        else
-            IsWallTouched = false;
+        foreach (var hit in hits)
+        {
+            if (!hit.TryGetComponent<IDamageable>(out var damageable))
+                continue;
+            damageable.TakeDamage(atk);
+        }
     }
 
 
@@ -151,20 +162,23 @@ public class Player : Entity
         IsBasicAttackEnd = false;
     }
 
-    
+
     public override void OnBasicAttackEnd()
     {
         IsBasicAttackEnd = true;
     }
 
-    // Animator 控制（供状态调用，保持集中）
+    #region Animator 控制（供状态调用，保持集中）
+
     // public void SetAnimatorJumpFall(bool value) => _animator.SetBool(IsJumpOrFall, value);
-    //
     public void SetIsDash(bool value) => anim.SetBool(IsDashHash, value);
     public void SetIdleMove(bool value) => anim.SetBool(IsIdleMoveHash, value);
     public void SetJumpFall(bool value) => anim.SetBool(IsJumpOrFallHash, value);
     public void SetBasicAttack() => anim.SetTrigger(TriggerBasicAttackHash);
     public void SetBasicAttackIndex(int index) => anim.SetInteger(BasicAttackIndexHash, index);
+    public void TriggerTakeDamage() => anim.SetTrigger(TriggerTakeDamageHash);
+
+    #endregion
 
     public void UpdateFacing()
     {
@@ -181,4 +195,30 @@ public class Player : Entity
     {
         MoveInput = ctx.ReadValue<Vector2>();
     }
+
+    public void TakeDamage(float dmg)
+    {
+        TriggerTakeDamage();
+
+        rb.AddForce(
+            Vector2.right * -GetFaceRightSign * impulse,
+            ForceMode2D.Impulse
+        );
+
+        hp -= dmg;
+        Debug.Log($"[{GetType().Name}] current hp [{hp}]");
+
+
+        StateMachine.ChangeState(Move);
+    }
+
+#if UNITY_EDITOR
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(attackDetector.position,
+            attackRange
+        );
+    }
+#endif
 }

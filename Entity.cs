@@ -4,8 +4,7 @@ public class Entity : MonoBehaviour
 {
     protected Animator anim;
     public Rigidbody2D rb { get; private set; }
-
-
+    
     [Header("Move")]
     [SerializeField] private float moveSpeed = 5f;
     public float MoveSpeed => moveSpeed;
@@ -31,15 +30,35 @@ public class Entity : MonoBehaviour
     [SerializeField]
     protected float wallCheckLength = 0.2f;
 
+    [SerializeField]
+    protected float impulse = 1f;
+    /// <summary>
+    /// 当 knock back 的时候，暂停速度更新
+    /// </summary>
+    protected bool IsPauseFixedUpdate = false; 
 
     protected StateMachine StateMachine { get; private set; }
     public string currentStateName;
 
-
     /// <summary>
-    /// 地面检测结果
+    /// 战斗相关，hp atk 等
+    /// </summary>
+    [Header("Battle System")]
+    [SerializeField]
+    public float hp = 100f;
+    [SerializeField]
+    public float atk = 25f;
+    
+    
+    /// <summary>
+    /// 地面检测
     /// </summary>
     public bool IsGrounded { get; private set; }
+    
+    /// <summary>
+    /// 墙壁检测
+    /// </summary>
+    public bool IsWallTouched { get; private set; }
 
 
     protected virtual void Awake()
@@ -60,8 +79,12 @@ public class Entity : MonoBehaviour
         StateMachine.LogicUpdate();
     }
 
-    private void FixedUpdate()
+    protected virtual void FixedUpdate()
     {
+        if (IsPauseFixedUpdate)
+            return;
+        
+        
         // 1. 地面检测
         Detect();
 
@@ -74,6 +97,18 @@ public class Entity : MonoBehaviour
     {
         // 1. 地面圆形检测
         IsGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+        
+        
+        // 2. 墙壁射线检测 -> WallSlide
+        var hit = Physics2D.Raycast(wallCheck.position,
+            Vector3.right * GetFaceRightSign,
+            wallCheckLength,
+            wallLayer);
+
+        if (hit.collider is not null)
+            IsWallTouched = true;
+        else
+            IsWallTouched = false;
     }
 
 
@@ -89,7 +124,7 @@ public class Entity : MonoBehaviour
 
 
     public bool IsFaceRight => transform.localScale.x > 0;
-    public float GetFaceRightInt => Mathf.Sign(transform.localScale.x);
+    public float GetFaceRightSign => Mathf.Sign(transform.localScale.x);
 
 
 #if UNITY_EDITOR
@@ -106,6 +141,10 @@ public class Entity : MonoBehaviour
     }
 #endif
     public virtual void OnBasicAttackEnd()
+    {
+    }
+
+    public virtual void OnAttack()
     {
     }
 }

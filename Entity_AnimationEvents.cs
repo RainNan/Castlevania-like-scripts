@@ -14,4 +14,9 @@ public class Entity_AnimationEvents : MonoBehaviour
     {
         entity.OnBasicAttackEnd();
     }
+
+    public void OnAttack()
+    {
+        entity.OnAttack();
+    }
 }

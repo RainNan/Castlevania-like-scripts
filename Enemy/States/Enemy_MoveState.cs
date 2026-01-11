@@ -15,6 +15,11 @@ public class Enemy_MoveState : Enemy_GroundedState
     {
         base.PhysicUpdate();
 
+        if (enemy.IsWallTouched)
+        {
+            enemy.Flip();
+        }
+
         rb.velocity = new Vector2(enemy.IsFaceRight ? enemy.MoveSpeed : -enemy.MoveSpeed, rb.velocity.y);
     }
 }

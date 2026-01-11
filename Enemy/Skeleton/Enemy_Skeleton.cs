@@ -4,7 +4,7 @@
     {
         base.Start();
         
-        StateMachine.Initialize(idle);
+        StateMachine.Initialize(Idle);
     }
 
     protected override void Update()

@@ -15,4 +15,8 @@ public class Enemy_AnimationEvents:MonoBehaviour
         _enemy.OnAttackEnd();
         Debug.Log("OnAttackEnd");
     }
+
+    public void OnAttack() => _enemy.OnAttack();
+
+    public void OnTakeDamageEnd() => _enemy.OnTakeDamageEnd();
 }

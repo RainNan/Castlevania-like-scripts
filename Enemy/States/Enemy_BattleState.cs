@@ -25,17 +25,17 @@ public class Enemy_BattleState : EnemyState
         var playerCollider = enemy.raycastHit2D.collider;
         if (playerCollider is not null)
         {
-            if (Mathf.Abs(enemy.transform.position.x - playerCollider.transform.position.x) <= enemy.attackDistance)
-                stateMachine.ChangeState(enemy.attack);
+            if (Mathf.Abs(enemy.transform.position.x - playerCollider.transform.position.x) <= enemy.attackRange)
+                stateMachine.ChangeState(enemy.Attack);
         }
         else
-            stateMachine.ChangeState(enemy.move);
+            stateMachine.ChangeState(enemy.Move);
     }
 
     public override void PhysicUpdate()
     {
         base.PhysicUpdate();
         rb.velocity = new Vector2(
-            enemy.battleMoveSpeed * enemy.GetFaceRightInt, rb.velocity.y);
+            enemy.battleMoveSpeed * enemy.GetFaceRightSign, rb.velocity.y);
     }
 }

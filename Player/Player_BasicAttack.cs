@@ -30,7 +30,6 @@ public class Player_BasicAttack : PlayerState
         _curBasicAttackIndex++;
     }
 
-
     public override void LogicUpdate()
     {
         base.LogicUpdate();
@@ -47,7 +46,7 @@ public class Player_BasicAttack : PlayerState
         base.PhysicUpdate();
 
         var v = player.rb.velocity;
-        v.x = player.BasicAttackVelocity[_curBasicAttackIndex - 1].x * player.GetFaceRightInt;
+        v.x = player.BasicAttackVelocity[_curBasicAttackIndex - 1].x * player.GetFaceRightSign;
         player.rb.velocity = v;
     }
 

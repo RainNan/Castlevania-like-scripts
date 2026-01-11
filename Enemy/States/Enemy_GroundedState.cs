@@ -12,6 +12,6 @@
             enemy.Flip();
         
         if (enemy.raycastHit2D.collider is not null)
-            stateMachine.ChangeState(enemy.battle);
+            stateMachine.ChangeState(enemy.Battle);
     }
 }
