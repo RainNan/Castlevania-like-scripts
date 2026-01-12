@@ -131,7 +131,7 @@ public class Player : Entity, IDamageable
         {
             if (!hit.TryGetComponent<IDamageable>(out var damageable))
                 continue;
-            damageable.TakeDamage(atk);
+            damageable.TakeDamage(atk,GetFaceRightSign);
         }
     }
 
@@ -196,18 +196,17 @@ public class Player : Entity, IDamageable
         MoveInput = ctx.ReadValue<Vector2>();
     }
 
-    public void TakeDamage(float dmg)
+    public void TakeDamage(float dmg, float attackDir)
     {
         TriggerTakeDamage();
 
         rb.AddForce(
-            Vector2.right * -GetFaceRightSign * impulse,
+            Vector2.right * attackDir * impulse,
             ForceMode2D.Impulse
         );
 
         hp -= dmg;
         Debug.Log($"[{GetType().Name}] current hp [{hp}]");
-
 
         StateMachine.ChangeState(Move);
     }
@@ -221,4 +220,5 @@ public class Player : Entity, IDamageable
         );
     }
 #endif
+
 }

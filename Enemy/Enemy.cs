@@ -61,6 +61,10 @@ public class Enemy : Entity, IDamageable
     protected override void Update()
     {
         base.Update();
+        
+        if (rb.velocity.x < -0.01f)
+            Debug.Log($"slideBack vx={rb.velocity.x}, pause={IsPauseFixedUpdate}, state={StateMachine.CurrentState?.GetType().Name}");
+
 
         anim.SetFloat(XVelocityHash, rb.velocity.x);
     }
@@ -109,20 +113,21 @@ public class Enemy : Entity, IDamageable
     }
 #endif
     
-    public void TakeDamage(float dmg)
+    public void TakeDamage(float dmg, float attackDir)
     {
         TriggerTakeDamage();
-        StateMachine.ChangeState(Move);
 
         IsPauseFixedUpdate = true;
+        rb.velocity = new Vector2(0f, rb.velocity.y);
         rb.AddForce(
-            Vector2.right * -GetFaceRightSign * impulse,
+            Vector2.right * attackDir * impulse,
             ForceMode2D.Impulse
         );
-        
+
         hp -= dmg;
         Debug.Log($"[{GetType().Name}] current hp [{hp}]");
     }
+    
 
     public override void OnAttack()
     {
@@ -136,12 +141,16 @@ public class Enemy : Entity, IDamageable
 
         if (hit.TryGetComponent<IDamageable>(out var damageable))
         {
-            damageable.TakeDamage(atk);
+            damageable.TakeDamage(atk, GetFaceRightSign);
         }
     }
 
     public void OnTakeDamageEnd()
     {
+        rb.velocity = new Vector2(0f, rb.velocity.y);
         IsPauseFixedUpdate = false;
+        
+        StateMachine.ChangeState(Idle);
+        
     }
 }
