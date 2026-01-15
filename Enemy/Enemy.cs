@@ -151,6 +151,5 @@ public class Enemy : Entity, IDamageable
         IsPauseFixedUpdate = false;
         
         StateMachine.ChangeState(Idle);
-        
     }
 }

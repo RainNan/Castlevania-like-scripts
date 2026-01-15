@@ -4,9 +4,14 @@ public class Entity : MonoBehaviour
 {
     protected Animator anim;
     public Rigidbody2D rb { get; private set; }
-    
+
+    private static readonly int IsDead = Animator.StringToHash("IsDead");
+
+    public Entity_DeathState EntityDeathState;
+
     [Header("Move")]
-    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField]
+    private float moveSpeed = 5f;
     public float MoveSpeed => moveSpeed;
 
     [Header("Jump")]
@@ -35,7 +40,7 @@ public class Entity : MonoBehaviour
     /// <summary>
     /// 当 knock back 的时候，暂停速度更新
     /// </summary>
-    protected bool IsPauseFixedUpdate = false; 
+    protected bool IsPauseFixedUpdate = false;
 
     protected StateMachine StateMachine { get; private set; }
     public string currentStateName;
@@ -48,13 +53,13 @@ public class Entity : MonoBehaviour
     public float hp = 100f;
     [SerializeField]
     public float atk = 25f;
-    
-    
+
+
     /// <summary>
     /// 地面检测
     /// </summary>
     public bool IsGrounded { get; private set; }
-    
+
     /// <summary>
     /// 墙壁检测
     /// </summary>
@@ -66,6 +71,8 @@ public class Entity : MonoBehaviour
         anim = GetComponentInChildren<Animator>();
         rb = GetComponent<Rigidbody2D>();
         StateMachine = new StateMachine();
+
+        EntityDeathState = new Entity_DeathState(StateMachine, this);
     }
 
 
@@ -83,13 +90,16 @@ public class Entity : MonoBehaviour
     {
         if (IsPauseFixedUpdate)
             return;
-        
-        
+
+
         // 1. 地面检测
         Detect();
 
         // 2. 物理更新
         StateMachine.PhysicUpdate();
+
+        if (hp <= 0)
+            StateMachine.ChangeState(EntityDeathState);
     }
 
 
@@ -97,8 +107,8 @@ public class Entity : MonoBehaviour
     {
         // 1. 地面圆形检测
         IsGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
-        
-        
+
+
         // 2. 墙壁射线检测 -> WallSlide
         var hit = Physics2D.Raycast(wallCheck.position,
             Vector3.right * GetFaceRightSign,
@@ -147,7 +157,6 @@ public class Entity : MonoBehaviour
     public virtual void OnAttack()
     {
     }
-    
 
-
+    public void OnDead() => anim.SetBool(IsDead, true);
 }

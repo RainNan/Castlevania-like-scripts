@@ -11,7 +11,7 @@ public class EntityState
         
     protected float stateTimer = 3f;
     
-    public EntityState(StateMachine stateMachine,Entity entity)
+    protected EntityState(StateMachine stateMachine,Entity entity)
     {
         this.stateMachine = stateMachine;
         this.entity = entity;
