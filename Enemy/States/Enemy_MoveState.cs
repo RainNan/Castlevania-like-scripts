@@ -15,7 +15,7 @@ public class Enemy_MoveState : Enemy_GroundedState
     {
         base.PhysicUpdate();
 
-        if (enemy.IsWallTouched)
+        if (enemy.IsWallTouched || enemy.ShouldFlipAtPatrolBoundary())
         {
             enemy.Flip();
         }

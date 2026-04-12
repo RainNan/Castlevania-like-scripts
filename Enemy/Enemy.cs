@@ -8,6 +8,13 @@ public class Enemy : Entity, IDamageable
     public Enemy_BattleState Battle;
     public Enemy_AttackState Attack;
 
+    [Header("Patrol")]
+    [SerializeField]
+    private float patrolRange = 4f;
+    private float patrolCenterX;
+    public float PatrolLeftX => patrolCenterX - patrolRange;
+    public float PatrolRightX => patrolCenterX + patrolRange;
+
     /// <summary>
     ///  玩家处于这个距离内，则转入[战斗状态]
     /// </summary>
@@ -46,6 +53,12 @@ public class Enemy : Entity, IDamageable
         RegisterStates();
     }
 
+    protected override void Start()
+    {
+        base.Start();
+        patrolCenterX = transform.position.x;
+    }
+
     /// <summary>
     /// 注册所有状态
     /// </summary>
@@ -71,7 +84,18 @@ public class Enemy : Entity, IDamageable
 
     public virtual void OnAttackEnd()
     {
+        if (IsDead)
+            return;
+
         StateMachine.ChangeState(Move);
+    }
+
+    public bool ShouldFlipAtPatrolBoundary()
+    {
+        if (IsFaceRight)
+            return transform.position.x >= PatrolRightX;
+
+        return transform.position.x <= PatrolLeftX;
     }
 
     #region set Animator Parameters
@@ -109,12 +133,23 @@ public class Enemy : Entity, IDamageable
             attackDetector.position,
             attackRange
         );
+
+        var centerX = Application.isPlaying ? patrolCenterX : transform.position.x;
+        var left = new Vector3(centerX - patrolRange, transform.position.y, transform.position.z);
+        var right = new Vector3(centerX + patrolRange, transform.position.y, transform.position.z);
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawLine(left, right);
+        Gizmos.DrawWireSphere(left, 0.12f);
+        Gizmos.DrawWireSphere(right, 0.12f);
         
     }
 #endif
     
     public void TakeDamage(float dmg, float attackDir)
     {
+        if (IsDead)
+            return;
+
         TriggerTakeDamage();
 
         IsPauseFixedUpdate = true;
@@ -124,7 +159,7 @@ public class Enemy : Entity, IDamageable
             ForceMode2D.Impulse
         );
 
-        hp -= dmg;
+        ApplyDamage(dmg);
         Debug.Log($"[{GetType().Name}] current hp [{hp}]");
     }
     
@@ -139,7 +174,7 @@ public class Enemy : Entity, IDamageable
             playerLayerMask
         );
 
-        if (hit.TryGetComponent<IDamageable>(out var damageable))
+        if (hit != null && hit.TryGetComponent<IDamageable>(out var damageable))
         {
             damageable.TakeDamage(atk, GetFaceRightSign);
         }
@@ -147,6 +182,9 @@ public class Enemy : Entity, IDamageable
 
     public void OnTakeDamageEnd()
     {
+        if (IsDead)
+            return;
+
         rb.velocity = new Vector2(0f, rb.velocity.y);
         IsPauseFixedUpdate = false;
         

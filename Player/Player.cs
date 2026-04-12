@@ -1,5 +1,4 @@
 using System;
-using DefaultNamespace;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -30,10 +29,13 @@ public class Player : Entity, IDamageable
     [Header("Attack Dectation")]
     [SerializeField]
     private Transform attackDetector;
+    public Transform AttackDetector => attackDetector;
     [SerializeField]
     private float attackRange;
+    public float AttackRange => attackRange;
     [SerializeField]
     private LayerMask enemyLayerMask;
+    public LayerMask EnemyLayerMask => enemyLayerMask;
 
 
     // Animator Params
@@ -55,6 +57,7 @@ public class Player : Entity, IDamageable
     public Player_SlideState Slide { get; private set; }
     public Player_DashState Dash { get; private set; }
     public Player_BasicAttack BasicAttack { get; private set; }
+    public PlayerSkillController SkillController { get; private set; }
 
     // 输入缓存
     public Vector2 MoveInput { get; private set; }
@@ -84,6 +87,9 @@ public class Player : Entity, IDamageable
         Slide = new Player_SlideState(StateMachine, this);
         Dash = new Player_DashState(StateMachine, this);
         BasicAttack = new Player_BasicAttack(StateMachine, this);
+        SkillController = GetComponent<PlayerSkillController>();
+        if (SkillController == null)
+            SkillController = gameObject.AddComponent<PlayerSkillController>();
 
         PlayerInputSet = new PlayerInputSet();
     }
@@ -121,6 +127,9 @@ public class Player : Entity, IDamageable
     /// </summary>
     public override void OnAttack()
     {
+        if (attackDetector == null)
+            return;
+
         var hits = Physics2D.OverlapCircleAll(
             attackDetector.position,
             attackRange,
@@ -155,6 +164,19 @@ public class Player : Entity, IDamageable
         base.Start();
         // 状态机初始化
         StateMachine.Initialize(Idle);
+        EnsureRuntimeHud();
+    }
+
+    private void EnsureRuntimeHud()
+    {
+        if (SkillController == null)
+            SkillController = GetComponent<PlayerSkillController>();
+
+        if (FindObjectOfType<PlayerStatsPanel>() == null)
+            PlayerStatsPanel.CreateRuntime(this, SkillController);
+
+        if (SkillController != null && FindObjectOfType<SkillCooldownBar>() == null)
+            SkillCooldownBar.CreateRuntime(SkillController);
     }
 
     public void OnBasicAttackStart()
@@ -198,6 +220,9 @@ public class Player : Entity, IDamageable
 
     public void TakeDamage(float dmg, float attackDir)
     {
+        if (IsDead)
+            return;
+
         TriggerTakeDamage();
 
         rb.AddForce(
@@ -205,15 +230,19 @@ public class Player : Entity, IDamageable
             ForceMode2D.Impulse
         );
 
-        hp -= dmg;
+        ApplyDamage(dmg);
         Debug.Log($"[{GetType().Name}] current hp [{hp}]");
 
-        StateMachine.ChangeState(Move);
+        if (!IsDead)
+            StateMachine.ChangeState(Move);
     }
 
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {
+        if (attackDetector == null)
+            return;
+
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(attackDetector.position,
             attackRange

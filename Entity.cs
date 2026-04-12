@@ -1,11 +1,12 @@
 ﻿using UnityEngine;
+using System;
 
 public class Entity : MonoBehaviour
 {
     protected Animator anim;
     public Rigidbody2D rb { get; private set; }
 
-    private static readonly int IsDead = Animator.StringToHash("IsDead");
+    private static readonly int IsDeadHash = Animator.StringToHash("IsDead");
 
     public Entity_DeathState EntityDeathState;
 
@@ -50,9 +51,20 @@ public class Entity : MonoBehaviour
     /// </summary>
     [Header("Battle System")]
     [SerializeField]
+    private float maxHp = 100f;
+    [SerializeField]
     public float hp = 100f;
     [SerializeField]
     public float atk = 25f;
+    public float MaxHp => maxHp;
+    public float Hp => hp;
+    public float Atk => atk;
+    public float HpNormalized => maxHp <= 0f ? 0f : Mathf.Clamp01(hp / maxHp);
+    public bool IsDead => hp <= 0f;
+    public event Action<Entity> StatsChanged;
+    public event Action<Entity> HealthChanged;
+    public event Action<Entity> Died;
+    private bool hasEnteredDeathState;
 
 
     /// <summary>
@@ -78,6 +90,9 @@ public class Entity : MonoBehaviour
 
     protected virtual void Start()
     {
+        maxHp = Mathf.Max(1f, maxHp);
+        hp = Mathf.Clamp(hp, 0f, maxHp);
+        RaiseStatsChanged();
     }
 
     protected virtual void Update()
@@ -99,7 +114,7 @@ public class Entity : MonoBehaviour
         StateMachine.PhysicUpdate();
 
         if (hp <= 0)
-            StateMachine.ChangeState(EntityDeathState);
+            TryEnterDeathState();
     }
 
 
@@ -158,5 +173,41 @@ public class Entity : MonoBehaviour
     {
     }
 
-    public void OnDead() => anim.SetBool(IsDead, true);
+    protected bool ApplyDamage(float dmg)
+    {
+        if (hasEnteredDeathState)
+            return true;
+
+        var oldHp = hp;
+        hp = Mathf.Clamp(hp - Mathf.Max(0f, dmg), 0f, maxHp);
+
+        if (!Mathf.Approximately(oldHp, hp))
+            HealthChanged?.Invoke(this);
+
+        if (hp <= 0f)
+        {
+            TryEnterDeathState();
+            return true;
+        }
+
+        return false;
+    }
+
+    protected void RaiseStatsChanged()
+    {
+        StatsChanged?.Invoke(this);
+        HealthChanged?.Invoke(this);
+    }
+
+    private void TryEnterDeathState()
+    {
+        if (hasEnteredDeathState)
+            return;
+
+        hasEnteredDeathState = true;
+        Died?.Invoke(this);
+        StateMachine.ChangeState(EntityDeathState);
+    }
+
+    public void OnDead() => anim.SetBool(IsDeadHash, true);
 }
